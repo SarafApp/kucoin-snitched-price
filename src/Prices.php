@@ -2,6 +2,8 @@
 
 namespace Saraf;
 
+require_once __DIR__ . '/pairs.php';
+
 use Psr\Http\Message\ServerRequestInterface;
 use React\EventLoop\Loop;
 use React\Http\HttpServer;
@@ -57,50 +59,46 @@ class Prices
 
                 $okTickers = [];
                 foreach ($result['body']['data']['ticker'] as &$item) {
-                    if (in_array($item['symbol'], [
-                        "BTC-USDT",
-                        "ETH-USDT",
-                        "PAXG-USDT",
-                        "SOL-USDT",
-                        "ADA-USDT",
-                        "NOT-USDT",
-                        "BNB-USDT",
-                        "TON-USDT",
-                        "DOGE-USDT",
-                        "XRP-USDT",
-                        "POL-USDT",
-                        "ARB-USDT",
-                        "UNI-USDT",
-                        "AVAX-USDT",
-                        "LTC-USDT",
-                        "LINK-USDT",
-                        "S-USDT",
-                        "TRX-USDT",
-                        "ICP-USDT",
-                        "CAKE-USDT",
-                        "DOGS-USDT",
-                        "HMSTR-USDT",
-                        "WLD-USDT",
-                        "XLM-USDT",
-                        "FIL-USDT",
-                        "HBAR-USDT",
-                        "SHIB-USDT",
-                        "SAND-USDT",
-                        "PEPE-USDT",
-                        "SUI-USDT",
-                        "ALGO-USDT",
-                        "MANA-USDT",
-                        "GMT-USDT",
-                        "NEAR-USDT",
-                        "CRO-USDT",
-                        "BONK-USDT",
-                        "FET-USDT",
-                        "WIF-USDT",
-                        "DOT-USDT",
-                        "FLOKI-USDT",
-                        "LUNA-USDT",
-                        "RENDER-USDT",
-                    ])) $okTickers[] = $item;
+                    if (in_array($item['symbol'], PAIRS)) {
+                        /*
+                         * Kucoin response:
+                         * {
+                                "code": "200000",
+                                "data": {
+                                    "time": 1729173207043,
+                                    "ticker": [
+                                        {
+                                            "symbol": "BTC-USDT",
+                                            "symbolName": "BTC-USDT",
+                                            "buy": "67192.5",
+                                            "bestBidSize": "0.000025",
+                                            "sell": "67192.6",
+                                            "bestAskSize": "1.24949204",
+                                            "changeRate": "-0.0014",
+                                            "changePrice": "-98.5",
+                                            "high": "68321.4",
+                                            "low": "66683.3",
+                                            "vol": "1836.03034612",
+                                            "volValue": "124068431.06726933",
+                                            "last": "67193",
+                                            "averagePrice": "67281.21437289",
+                                            "takerFeeRate": "0.001",
+                                            "makerFeeRate": "0.001",
+                                            "takerCoefficient": "1",
+                                            "makerCoefficient": "1"
+                                        }
+                                    ]
+                                }
+                            }
+                         */
+
+                        $okTickers[] = [
+                            'symbol' => $item['symbol'],
+                            'buy' => $item['buy'],
+                            'sell' => $item['sell'],
+                            'changeRate' => $item['changeRate']
+                        ];
+                    }
                 }
 
 
