@@ -13,7 +13,7 @@ use React\Http\Middleware\StreamingRequestMiddleware;
 use React\Promise\PromiseInterface;
 use React\Socket\SocketServer;
 
-class Prices
+class KucoinPrices
 {
     protected AsyncRequestJson $api;
 
