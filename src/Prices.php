@@ -2,8 +2,6 @@
 
 namespace Saraf;
 
-require_once __DIR__ . '/pairs.php';
-
 use Psr\Http\Message\ServerRequestInterface;
 use React\EventLoop\Loop;
 use React\Http\HttpServer;
@@ -45,9 +43,24 @@ class Prices
 
     public function __invoke(ServerRequestInterface $request): PromiseInterface|Response
     {
+        $pairs = @$request->getQueryParams()['pairs'];
+
+        if (empty($pairs))
+            return new Response(400, ['Content-Type' => 'application/json'], json_encode([
+                'result' => false,
+                'error' => 'Error in getting pairs list'
+            ]));
+
+        $pairs = explode(",", $pairs);
+        if (!is_array($pairs) || count($pairs) == 0)
+            return new Response(400, ['Content-Type' => 'application/json'], json_encode([
+                'result' => false,
+                'error' => 'Error in getting pairs list'
+            ]));
+
         return $this->api
             ->get("https://api.kucoin.com/api/v1/market/allTickers")
-            ->then(function ($result) {
+            ->then(function ($result) use ($pairs) {
                 if (!$result['result'])
                     return new Response(500, ['Content-Type' => 'application/json'], json_encode([
                         'result' => false,
@@ -59,39 +72,7 @@ class Prices
 
                 $okTickers = [];
                 foreach ($result['body']['data']['ticker'] as &$item) {
-                    if (in_array($item['symbol'], PAIRS)) {
-                        /*
-                         * Kucoin response:
-                         * {
-                                "code": "200000",
-                                "data": {
-                                    "time": 1729173207043,
-                                    "ticker": [
-                                        {
-                                            "symbol": "BTC-USDT",
-                                            "symbolName": "BTC-USDT",
-                                            "buy": "67192.5",
-                                            "bestBidSize": "0.000025",
-                                            "sell": "67192.6",
-                                            "bestAskSize": "1.24949204",
-                                            "changeRate": "-0.0014",
-                                            "changePrice": "-98.5",
-                                            "high": "68321.4",
-                                            "low": "66683.3",
-                                            "vol": "1836.03034612",
-                                            "volValue": "124068431.06726933",
-                                            "last": "67193",
-                                            "averagePrice": "67281.21437289",
-                                            "takerFeeRate": "0.001",
-                                            "makerFeeRate": "0.001",
-                                            "takerCoefficient": "1",
-                                            "makerCoefficient": "1"
-                                        }
-                                    ]
-                                }
-                            }
-                         */
-
+                    if (in_array($item['symbol'], $pairs)) {
                         $okTickers[] = [
                             'symbol' => $item['symbol'],
                             'buy' => $item['buy'],
